@@ -34,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
+	hcloudmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client/mocks"
 	"github.com/syself/cluster-api-provider-hetzner/pkg/utils"
 )
 
@@ -49,6 +50,8 @@ var _ = Describe("HCloudMachineReconciler", func() {
 
 		hetznerSecret   *corev1.Secret
 		bootstrapSecret *corev1.Secret
+
+		hcloudClient *hcloudmock.Client
 
 		key client.ObjectKey
 
@@ -126,6 +129,8 @@ var _ = Describe("HCloudMachineReconciler", func() {
 		Expect(testEnv.Create(ctx, bootstrapSecret)).To(Succeed())
 
 		key = client.ObjectKey{Namespace: testNs.Name, Name: hcloudMachineName}
+
+		hcloudClient = testEnv.HcloudClient
 	})
 
 	AfterEach(func() {
