@@ -18,11 +18,13 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
@@ -32,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
+	hcloudmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client/mocks"
 	"github.com/syself/cluster-api-provider-hetzner/pkg/utils"
 	"github.com/syself/cluster-api-provider-hetzner/test/helpers"
 )
@@ -48,7 +51,10 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 
 			hetznerSecret *corev1.Secret
 
-			key                client.ObjectKey
+			hcloudClient *hcloudmock.Client
+
+			key client.ObjectKey
+
 			lbName             string
 			hetznerClusterName string
 		)
@@ -98,6 +104,14 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 			Expect(testEnv.Create(ctx, hetznerSecret)).To(Succeed())
 
 			key = client.ObjectKey{Namespace: namespace, Name: hetznerClusterName}
+
+			hcloudClient = testEnv.HcloudClient
+
+			hcloudClient.On("ListNetworks", mock.Anything, hcloud.NetworkListOpts{
+				ListOpts: hcloud.ListOpts{
+					LabelSelector: fmt.Sprintf("caph-cluster-%s==owned", hetznerClusterName),
+				},
+			}).Return([]*hcloud.Network{}, nil)
 		})
 
 		AfterEach(func() {
@@ -652,7 +666,10 @@ var _ = Describe("Hetzner secret", func() {
 
 		hetznerSecret *corev1.Secret
 
-		key                client.ObjectKey
+		hcloudClient *hcloudmock.Client
+
+		key client.ObjectKey
+
 		hetznerClusterName string
 	)
 
@@ -697,6 +714,14 @@ var _ = Describe("Hetzner secret", func() {
 		Expect(testEnv.Create(ctx, hetznerCluster)).To(Succeed())
 
 		key = client.ObjectKey{Namespace: hetznerCluster.Namespace, Name: hetznerCluster.Name}
+
+		hcloudClient = testEnv.HcloudClient
+
+		hcloudClient.On("ListNetworks", mock.Anything, hcloud.NetworkListOpts{
+			ListOpts: hcloud.ListOpts{
+				LabelSelector: fmt.Sprintf("caph-cluster-%s==owned", hetznerClusterName),
+			},
+		}).Return([]*hcloud.Network{}, nil)
 	})
 
 	AfterEach(func() {

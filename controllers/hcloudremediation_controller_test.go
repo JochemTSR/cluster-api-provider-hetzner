@@ -22,6 +22,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
@@ -30,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
+	hcloudmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client/mocks"
 	hcloudutil "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/util"
 	"github.com/syself/cluster-api-provider-hetzner/pkg/utils"
 )
@@ -51,6 +53,8 @@ var _ = Describe("HCloudRemediationReconciler", func() {
 		hcloudRemediationkey client.ObjectKey
 		capiMachineKey       client.ObjectKey
 		hcloudMachineKey     client.ObjectKey
+
+		hcloudClient *hcloudmock.Client
 	)
 
 	BeforeEach(func() {
@@ -178,6 +182,14 @@ var _ = Describe("HCloudRemediationReconciler", func() {
 		}
 
 		hcloudRemediationkey = client.ObjectKey{Namespace: testNs.Name, Name: "hcloud-remediation"}
+
+		hcloudClient = testEnv.HcloudClient
+
+		hcloudClient.On("ListNetworks", mock.Anything, hcloud.NetworkListOpts{
+			ListOpts: hcloud.ListOpts{
+				LabelSelector: "caph-cluster-hetzner-test1==owned",
+			},
+		}).Return([]*hcloud.Network{}, nil)
 	})
 
 	AfterEach(func() {
