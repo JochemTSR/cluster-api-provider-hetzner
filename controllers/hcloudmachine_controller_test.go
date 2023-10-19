@@ -22,6 +22,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
@@ -131,6 +132,16 @@ var _ = Describe("HCloudMachineReconciler", func() {
 		key = client.ObjectKey{Namespace: testNs.Name, Name: hcloudMachineName}
 
 		hcloudClient = testEnv.HcloudClient
+
+		hcloudClient.On("ListSSHKeys", mock.Anything, mock.Anything).Return([]*hcloud.SSHKey{}, nil)
+		hcloudClient.On("ListSSHKeys", mock.Anything, mock.Anything).Return(
+			[]*hcloud.SSHKey{
+				{
+					Name: "testsshkey",
+				},
+			},
+			nil,
+		)
 	})
 
 	AfterEach(func() {

@@ -182,7 +182,6 @@ func NewTestEnvironment() *TestEnvironment {
 	osSSHClientAfterInstallImage := &sshmock.Client{}
 	osSSHClientAfterCloudInit := &sshmock.Client{}
 	hcloudClient := &hcloudmock.Client{}
-
 	robotClient := &robotmock.Client{}
 
 	return &TestEnvironment{
