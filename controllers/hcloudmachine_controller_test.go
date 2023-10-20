@@ -190,6 +190,17 @@ var _ = Describe("HCloudMachineReconciler", func() {
 				LabelSelector: "caph-image-name==fedora-control-plane",
 			},
 		}).Return([]*hcloud.Image{}, nil)
+		hcloudClient.On("ListLoadBalancers", mock.Anything, mock.Anything).Return([]*hcloud.LoadBalancer{
+			{
+				LoadBalancerType: &hcloud.LoadBalancerType{
+					Name: "lb11",
+				},
+				Algorithm: hcloud.LoadBalancerAlgorithm{
+					Type: "round_robin",
+				},
+			},
+		}, nil)
+		hcloudClient.On("CreateLoadBalancer", mock.Anything, mock.Anything).Return(&hcloud.LoadBalancer{}, nil)
 	})
 
 	AfterEach(func() {
