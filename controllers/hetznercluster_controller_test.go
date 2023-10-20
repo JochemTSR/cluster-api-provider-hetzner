@@ -124,6 +124,12 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 					fmt.Sprintf("caph-cluster-%s", hetznerClusterName): "owned",
 				},
 			}).Return(&hcloud.Network{}, nil)
+			hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
+				ListOpts: hcloud.ListOpts{
+					LabelSelector: "",
+				},
+			}).Return([]*hcloud.Server{}, nil)
+			hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
 		})
 
 		AfterEach(func() {
@@ -746,6 +752,12 @@ var _ = Describe("Hetzner secret", func() {
 				fmt.Sprintf("caph-cluster-%s", hetznerClusterName): "owned",
 			},
 		}).Return(&hcloud.Network{}, nil)
+		hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
+			ListOpts: hcloud.ListOpts{
+				LabelSelector: "",
+			},
+		}).Return([]*hcloud.Server{}, nil)
+		hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
 	})
 
 	AfterEach(func() {

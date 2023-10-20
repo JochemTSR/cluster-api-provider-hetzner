@@ -164,6 +164,11 @@ var _ = Describe("HCloudMachineReconciler", func() {
 				"caph-cluster-hetzner-test1": "owned",
 			},
 		}).Return(&hcloud.Network{}, nil)
+		hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
+			ListOpts: hcloud.ListOpts{
+				LabelSelector: "",
+			},
+		}).Return([]*hcloud.Server{}, nil)
 	})
 
 	AfterEach(func() {

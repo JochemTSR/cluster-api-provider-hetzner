@@ -183,6 +183,12 @@ var _ = Describe("HetznerBareMetalMachineReconciler", func() {
 				fmt.Sprintf("caph-cluster-%s", hetznerClusterName): "owned",
 			},
 		}).Return(&hcloud.Network{}, nil)
+		hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
+			ListOpts: hcloud.ListOpts{
+				LabelSelector: "",
+			},
+		}).Return([]*hcloud.Server{}, nil)
+		hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
 	})
 
 	AfterEach(func() {
