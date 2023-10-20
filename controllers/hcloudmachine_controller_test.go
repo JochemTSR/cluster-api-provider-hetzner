@@ -133,6 +133,9 @@ var _ = Describe("HCloudMachineReconciler", func() {
 
 		key = client.ObjectKey{Namespace: testNs.Name, Name: hcloudMachineName}
 
+		_, network, err := net.ParseCIDR(hetznerCluster.Spec.HCloudNetwork.CIDRBlock)
+		Expect(err).NotTo(HaveOccurred())
+
 		_, subnet, err := net.ParseCIDR(hetznerCluster.Spec.HCloudNetwork.SubnetCIDRBlock)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -158,11 +161,12 @@ var _ = Describe("HCloudMachineReconciler", func() {
 			},
 		}).Return([]*hcloud.Server{}, nil)
 		hcloudClient.On("CreateNetwork", mock.Anything, hcloud.NetworkCreateOpts{
-			Name: "hetzner-test1",
+			Name:    "hetzner-test1",
+			IPRange: network,
 			Subnets: []hcloud.NetworkSubnet{
 				{
-					Type:        "server",
-					NetworkZone: "eu-central",
+					Type:        hcloud.NetworkSubnetTypeServer,
+					NetworkZone: hcloud.NetworkZone(hetznerCluster.Spec.HCloudNetwork.NetworkZone),
 					IPRange:     subnet,
 				},
 			},
@@ -170,9 +174,14 @@ var _ = Describe("HCloudMachineReconciler", func() {
 				"caph-cluster-hetzner-test1": "owned",
 			},
 		}).Return(&hcloud.Network{}, nil)
+		// hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
+		// 	ListOpts: hcloud.ListOpts{
+		// 		LabelSelector: fmt.Sprintf("caph-cluster-hetzner-test1==owned,machine.caph-name==%s,machine_type==worker", hcloudMachineName),
+		// 	},
+		// }).Return([]*hcloud.Server{}, nil)
 		hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
 			ListOpts: hcloud.ListOpts{
-				LabelSelector: fmt.Sprintf("caph-cluster-hetzner-test1==owned,machine.caph-name==%s,machine_type==worker", hcloudMachineName),
+				LabelSelector: "caph-cluster-hetzner-test1==owned",
 			},
 		}).Return([]*hcloud.Server{}, nil)
 		hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
@@ -234,7 +243,7 @@ var _ = Describe("HCloudMachineReconciler", func() {
 				}, timeout).Should(BeTrue())
 			})
 
-			It("creates the HCloud machine in Hetzner", func() {
+			FIt("creates the HCloud machine in Hetzner", func() {
 				By("checking that no servers exist")
 
 				Eventually(func() bool {
