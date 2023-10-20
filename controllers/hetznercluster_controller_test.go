@@ -112,6 +112,18 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 					LabelSelector: fmt.Sprintf("caph-cluster-%s==owned", hetznerClusterName),
 				},
 			}).Return([]*hcloud.Network{}, nil)
+			hcloudClient.On("CreateNetwork", mock.Anything, hcloud.NetworkCreateOpts{
+				Name: hetznerClusterName,
+				Subnets: []hcloud.NetworkSubnet{
+					{
+						Type:        "server",
+						NetworkZone: "eu-central",
+					},
+				},
+				Labels: map[string]string{
+					fmt.Sprintf("caph-cluster-%s", hetznerClusterName): "owned",
+				},
+			}).Return(&hcloud.Network{}, nil)
 		})
 
 		AfterEach(func() {
@@ -722,6 +734,18 @@ var _ = Describe("Hetzner secret", func() {
 				LabelSelector: fmt.Sprintf("caph-cluster-%s==owned", hetznerClusterName),
 			},
 		}).Return([]*hcloud.Network{}, nil)
+		hcloudClient.On("CreateNetwork", mock.Anything, hcloud.NetworkCreateOpts{
+			Name: hetznerClusterName,
+			Subnets: []hcloud.NetworkSubnet{
+				{
+					Type:        "server",
+					NetworkZone: "eu-central",
+				},
+			},
+			Labels: map[string]string{
+				fmt.Sprintf("caph-cluster-%s", hetznerClusterName): "owned",
+			},
+		}).Return(&hcloud.Network{}, nil)
 	})
 
 	AfterEach(func() {

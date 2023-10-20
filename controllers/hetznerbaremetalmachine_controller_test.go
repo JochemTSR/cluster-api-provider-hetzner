@@ -17,8 +17,10 @@ limitations under the License.
 package controllers
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
@@ -37,6 +39,7 @@ import (
 	robotmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/robot"
 	sshmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/ssh"
 	sshclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
+	hcloudmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client/mocks"
 	"github.com/syself/cluster-api-provider-hetzner/pkg/utils"
 	"github.com/syself/cluster-api-provider-hetzner/test/helpers"
 )
@@ -61,6 +64,7 @@ var _ = Describe("HetznerBareMetalMachineReconciler", func() {
 		robotClient     *robotmock.Client
 		rescueSSHClient *sshmock.Client
 		osSSHClient     *sshmock.Client
+		hcloudClient    *hcloudmock.Client
 	)
 
 	BeforeEach(func() {
@@ -124,6 +128,7 @@ var _ = Describe("HetznerBareMetalMachineReconciler", func() {
 		robotClient = testEnv.RobotClient
 		rescueSSHClient = testEnv.RescueSSHClient
 		osSSHClient = testEnv.OSSSHClientAfterInstallImage
+		hcloudClient = testEnv.HcloudClient
 
 		robotClient.On("GetBMServer", mock.Anything).Return(&models.Server{
 			ServerNumber: 1,
@@ -161,6 +166,23 @@ var _ = Describe("HetznerBareMetalMachineReconciler", func() {
 		})
 		osSSHClient.On("GetCloudInitOutput").Return(sshclient.Output{StdOut: "dummy content of /var/log/cloud-init-output.log"})
 
+		hcloudClient.On("ListNetworks", mock.Anything, hcloud.NetworkListOpts{
+			ListOpts: hcloud.ListOpts{
+				LabelSelector: fmt.Sprintf("caph-cluster-%s==owned", hetznerClusterName),
+			},
+		}).Return([]*hcloud.Network{}, nil)
+		hcloudClient.On("CreateNetwork", mock.Anything, hcloud.NetworkCreateOpts{
+			Name: hetznerClusterName,
+			Subnets: []hcloud.NetworkSubnet{
+				{
+					Type:        "server",
+					NetworkZone: "eu-central",
+				},
+			},
+			Labels: map[string]string{
+				fmt.Sprintf("caph-cluster-%s", hetznerClusterName): "owned",
+			},
+		}).Return(&hcloud.Network{}, nil)
 	})
 
 	AfterEach(func() {

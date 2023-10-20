@@ -152,7 +152,18 @@ var _ = Describe("HCloudMachineReconciler", func() {
 				LabelSelector: "caph-cluster-hetzner-test1==owned,machine.caph-name==hcloud-machine-ltxwc,machine_type==worker",
 			},
 		}).Return([]*hcloud.Server{}, nil)
-
+		hcloudClient.On("CreateNetwork", mock.Anything, hcloud.NetworkCreateOpts{
+			Name: "hetzner-test1",
+			Subnets: []hcloud.NetworkSubnet{
+				{
+					Type:        "server",
+					NetworkZone: "eu-central",
+				},
+			},
+			Labels: map[string]string{
+				"caph-cluster-hetzner-test1": "owned",
+			},
+		}).Return(&hcloud.Network{}, nil)
 	})
 
 	AfterEach(func() {
