@@ -137,6 +137,11 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 			hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
 			hcloudClient.On("GetServerType", mock.Anything, "cpx31").Return(&hcloud.ServerType{}, nil)
 			hcloudClient.On("GetServerType", mock.Anything, "cpx31").Return(&hcloud.ServerType{}, nil)
+			hcloudClient.On("ListImages", mock.Anything, hcloud.ImageListOpts{
+				ListOpts: hcloud.ListOpts{
+					LabelSelector: "caph-image-name==fedora-control-plane",
+				},
+			}).Return([]*hcloud.Image{}, nil)
 		})
 
 		AfterEach(func() {
@@ -770,6 +775,11 @@ var _ = Describe("Hetzner secret", func() {
 		}).Return([]*hcloud.Server{}, nil)
 		hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
 		hcloudClient.On("GetServerType", mock.Anything, "cpx31").Return(&hcloud.ServerType{}, nil)
+		hcloudClient.On("ListImages", mock.Anything, hcloud.ImageListOpts{
+			ListOpts: hcloud.ListOpts{
+				LabelSelector: "caph-image-name==fedora-control-plane",
+			},
+		}).Return([]*hcloud.Image{}, nil)
 	})
 
 	AfterEach(func() {
