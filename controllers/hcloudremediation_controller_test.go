@@ -17,6 +17,8 @@ limitations under the License.
 package controllers
 
 import (
+	"fmt"
+	"net"
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -183,6 +185,9 @@ var _ = Describe("HCloudRemediationReconciler", func() {
 
 		hcloudRemediationkey = client.ObjectKey{Namespace: testNs.Name, Name: "hcloud-remediation"}
 
+		_, subnet, err := net.ParseCIDR(hetznerCluster.Spec.HCloudNetwork.SubnetCIDRBlock)
+		Expect(err).NotTo(HaveOccurred())
+
 		hcloudClient = testEnv.HcloudClient
 
 		hcloudClient.On("ListNetworks", mock.Anything, hcloud.NetworkListOpts{
@@ -196,6 +201,7 @@ var _ = Describe("HCloudRemediationReconciler", func() {
 				{
 					Type:        "server",
 					NetworkZone: "eu-central",
+					IPRange:     subnet,
 				},
 			},
 			Labels: map[string]string{
@@ -204,10 +210,11 @@ var _ = Describe("HCloudRemediationReconciler", func() {
 		}).Return(&hcloud.Network{}, nil)
 		hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
 			ListOpts: hcloud.ListOpts{
-				LabelSelector: "",
+				LabelSelector: fmt.Sprintf("caph-cluster-hetzner-test1==owned,machine.caph-name==%s,machine_type==worker", hcloudMachineName),
 			},
 		}).Return([]*hcloud.Server{}, nil)
 		hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
+		hcloudClient.On("GetServerType", mock.Anything, "cpx31").Return(&hcloud.ServerType{}, nil)
 	})
 
 	AfterEach(func() {

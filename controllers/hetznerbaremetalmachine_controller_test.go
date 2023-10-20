@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -125,6 +126,9 @@ var _ = Describe("HetznerBareMetalMachineReconciler", func() {
 		bootstrapSecret = getDefaultBootstrapSecret(testNs.Name)
 		Expect(testEnv.Create(ctx, bootstrapSecret)).To(Succeed())
 
+		_, subnet, err := net.ParseCIDR(hetznerCluster.Spec.HCloudNetwork.SubnetCIDRBlock)
+		Expect(err).NotTo(HaveOccurred())
+
 		robotClient = testEnv.RobotClient
 		rescueSSHClient = testEnv.RescueSSHClient
 		osSSHClient = testEnv.OSSSHClientAfterInstallImage
@@ -177,6 +181,7 @@ var _ = Describe("HetznerBareMetalMachineReconciler", func() {
 				{
 					Type:        "server",
 					NetworkZone: "eu-central",
+					IPRange:     subnet,
 				},
 			},
 			Labels: map[string]string{
@@ -189,6 +194,7 @@ var _ = Describe("HetznerBareMetalMachineReconciler", func() {
 			},
 		}).Return([]*hcloud.Server{}, nil)
 		hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
+		hcloudClient.On("GetServerType", mock.Anything, "cpx31").Return(&hcloud.ServerType{}, nil)
 	})
 
 	AfterEach(func() {

@@ -17,6 +17,8 @@ limitations under the License.
 package controllers
 
 import (
+	"fmt"
+	"net"
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -131,6 +133,9 @@ var _ = Describe("HCloudMachineReconciler", func() {
 
 		key = client.ObjectKey{Namespace: testNs.Name, Name: hcloudMachineName}
 
+		_, subnet, err := net.ParseCIDR(hetznerCluster.Spec.HCloudNetwork.SubnetCIDRBlock)
+		Expect(err).NotTo(HaveOccurred())
+
 		hcloudClient = testEnv.HcloudClient
 
 		hcloudClient.On("ListSSHKeys", mock.Anything, mock.Anything).Return([]*hcloud.SSHKey{}, nil)
@@ -149,7 +154,7 @@ var _ = Describe("HCloudMachineReconciler", func() {
 		}).Return([]*hcloud.Network{}, nil)
 		hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
 			ListOpts: hcloud.ListOpts{
-				LabelSelector: "caph-cluster-hetzner-test1==owned,machine.caph-name==hcloud-machine-ltxwc,machine_type==worker",
+				LabelSelector: fmt.Sprintf("caph-cluster-hetzner-test1==owned,machine.caph-name==%s,machine_type==worker", hcloudMachineName),
 			},
 		}).Return([]*hcloud.Server{}, nil)
 		hcloudClient.On("CreateNetwork", mock.Anything, hcloud.NetworkCreateOpts{
@@ -158,6 +163,7 @@ var _ = Describe("HCloudMachineReconciler", func() {
 				{
 					Type:        "server",
 					NetworkZone: "eu-central",
+					IPRange:     subnet,
 				},
 			},
 			Labels: map[string]string{
@@ -166,9 +172,10 @@ var _ = Describe("HCloudMachineReconciler", func() {
 		}).Return(&hcloud.Network{}, nil)
 		hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
 			ListOpts: hcloud.ListOpts{
-				LabelSelector: "",
+				LabelSelector: fmt.Sprintf("caph-cluster-hetzner-test1==owned,machine.caph-name==%s,machine_type==worker", hcloudMachineName),
 			},
 		}).Return([]*hcloud.Server{}, nil)
+		hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
 	})
 
 	AfterEach(func() {

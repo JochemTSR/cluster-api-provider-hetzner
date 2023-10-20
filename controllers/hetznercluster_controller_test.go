@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -130,6 +131,8 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 				},
 			}).Return([]*hcloud.Server{}, nil)
 			hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
+			hcloudClient.On("GetServerType", mock.Anything, "cpx31").Return(&hcloud.ServerType{}, nil)
+			hcloudClient.On("GetServerType", mock.Anything, "cpx31").Return(&hcloud.ServerType{}, nil)
 		})
 
 		AfterEach(func() {
@@ -733,6 +736,9 @@ var _ = Describe("Hetzner secret", func() {
 
 		key = client.ObjectKey{Namespace: hetznerCluster.Namespace, Name: hetznerCluster.Name}
 
+		_, subnet, err := net.ParseCIDR(hetznerCluster.Spec.HCloudNetwork.SubnetCIDRBlock)
+		Expect(err).NotTo(HaveOccurred())
+
 		hcloudClient = testEnv.HcloudClient
 
 		hcloudClient.On("ListNetworks", mock.Anything, hcloud.NetworkListOpts{
@@ -746,6 +752,7 @@ var _ = Describe("Hetzner secret", func() {
 				{
 					Type:        "server",
 					NetworkZone: "eu-central",
+					IPRange:     subnet,
 				},
 			},
 			Labels: map[string]string{
@@ -758,6 +765,7 @@ var _ = Describe("Hetzner secret", func() {
 			},
 		}).Return([]*hcloud.Server{}, nil)
 		hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
+		hcloudClient.On("GetServerType", mock.Anything, "cpx31").Return(&hcloud.ServerType{}, nil)
 	})
 
 	AfterEach(func() {
