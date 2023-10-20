@@ -143,9 +143,16 @@ var _ = Describe("HCloudMachineReconciler", func() {
 			nil,
 		)
 		hcloudClient.On("ListNetworks", mock.Anything, mock.Anything).Return([]*hcloud.Network{}, nil)
+		hcloudClient.On("ListServers", mock.Anything, mock.Anything).Return([]*hcloud.Server{
+			{
+				ID:     9999,
+				Name:   "foo",
+				Status: hcloud.ServerStatusRunning,
+			},
+		}, nil)
 		hcloudClient.On("ListServers", mock.Anything, mock.Anything).Return([]*hcloud.Server{}, nil)
+		hcloudClient.On("DeleteServer", mock.Anything, mock.Anything).Return(nil)
 		hcloudClient.On("CreateNetwork", mock.Anything, mock.Anything).Return(&hcloud.Network{}, nil)
-		hcloudClient.On("ListServers", mock.Anything, mock.Anything).Return([]*hcloud.Server{}, nil)
 		hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
 		hcloudClient.On("ListImages", mock.Anything, mock.Anything).Return([]*hcloud.Image{}, nil)
 		hcloudClient.On("ListLoadBalancers", mock.Anything, mock.Anything).Return([]*hcloud.LoadBalancer{
