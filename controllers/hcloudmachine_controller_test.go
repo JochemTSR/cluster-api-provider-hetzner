@@ -17,8 +17,6 @@ limitations under the License.
 package controllers
 
 import (
-	"fmt"
-	"net"
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -133,12 +131,6 @@ var _ = Describe("HCloudMachineReconciler", func() {
 
 		key = client.ObjectKey{Namespace: testNs.Name, Name: hcloudMachineName}
 
-		_, network, err := net.ParseCIDR(hetznerCluster.Spec.HCloudNetwork.CIDRBlock)
-		Expect(err).NotTo(HaveOccurred())
-
-		_, subnet, err := net.ParseCIDR(hetznerCluster.Spec.HCloudNetwork.SubnetCIDRBlock)
-		Expect(err).NotTo(HaveOccurred())
-
 		hcloudClient = testEnv.HcloudClient
 
 		hcloudClient.On("ListSSHKeys", mock.Anything, mock.Anything).Return([]*hcloud.SSHKey{}, nil)
@@ -150,46 +142,12 @@ var _ = Describe("HCloudMachineReconciler", func() {
 			},
 			nil,
 		)
-		hcloudClient.On("ListNetworks", mock.Anything, hcloud.NetworkListOpts{
-			ListOpts: hcloud.ListOpts{
-				LabelSelector: "caph-cluster-hetzner-test1==owned",
-			},
-		}).Return([]*hcloud.Network{}, nil)
-		hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
-			ListOpts: hcloud.ListOpts{
-				LabelSelector: fmt.Sprintf("caph-cluster-hetzner-test1==owned,machine.caph-name==%s,machine_type==worker", hcloudMachineName),
-			},
-		}).Return([]*hcloud.Server{}, nil)
-		hcloudClient.On("CreateNetwork", mock.Anything, hcloud.NetworkCreateOpts{
-			Name:    "hetzner-test1",
-			IPRange: network,
-			Subnets: []hcloud.NetworkSubnet{
-				{
-					Type:        hcloud.NetworkSubnetTypeServer,
-					NetworkZone: hcloud.NetworkZone(hetznerCluster.Spec.HCloudNetwork.NetworkZone),
-					IPRange:     subnet,
-				},
-			},
-			Labels: map[string]string{
-				"caph-cluster-hetzner-test1": "owned",
-			},
-		}).Return(&hcloud.Network{}, nil)
-		// hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
-		// 	ListOpts: hcloud.ListOpts{
-		// 		LabelSelector: fmt.Sprintf("caph-cluster-hetzner-test1==owned,machine.caph-name==%s,machine_type==worker", hcloudMachineName),
-		// 	},
-		// }).Return([]*hcloud.Server{}, nil)
-		hcloudClient.On("ListServers", mock.Anything, hcloud.ServerListOpts{
-			ListOpts: hcloud.ListOpts{
-				LabelSelector: "caph-cluster-hetzner-test1==owned",
-			},
-		}).Return([]*hcloud.Server{}, nil)
+		hcloudClient.On("ListNetworks", mock.Anything, mock.Anything).Return([]*hcloud.Network{}, nil)
+		hcloudClient.On("ListServers", mock.Anything, mock.Anything).Return([]*hcloud.Server{}, nil)
+		hcloudClient.On("CreateNetwork", mock.Anything, mock.Anything).Return(&hcloud.Network{}, nil)
+		hcloudClient.On("ListServers", mock.Anything, mock.Anything).Return([]*hcloud.Server{}, nil)
 		hcloudClient.On("ListServerTypes", mock.Anything).Return([]*hcloud.ServerType{}, nil)
-		hcloudClient.On("ListImages", mock.Anything, hcloud.ImageListOpts{
-			ListOpts: hcloud.ListOpts{
-				LabelSelector: "caph-image-name==fedora-control-plane",
-			},
-		}).Return([]*hcloud.Image{}, nil)
+		hcloudClient.On("ListImages", mock.Anything, mock.Anything).Return([]*hcloud.Image{}, nil)
 		hcloudClient.On("ListLoadBalancers", mock.Anything, mock.Anything).Return([]*hcloud.LoadBalancer{
 			{
 				LoadBalancerType: &hcloud.LoadBalancerType{
@@ -201,6 +159,11 @@ var _ = Describe("HCloudMachineReconciler", func() {
 			},
 		}, nil)
 		hcloudClient.On("CreateLoadBalancer", mock.Anything, mock.Anything).Return(&hcloud.LoadBalancer{}, nil)
+		hcloudClient.On("AttachLoadBalancerToNetwork", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		hcloudClient.On("AddServiceToLoadBalancer", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		hcloudClient.On("ListPlacementGroups", mock.Anything, mock.Anything).Return([]*hcloud.PlacementGroup{}, nil)
+		hcloudClient.On("CreatePlacementGroup", mock.Anything, mock.Anything).Return(&hcloud.PlacementGroup{}, nil)
+		hcloudClient.On("GetServerType", mock.Anything, mock.Anything).Return(&hcloud.ServerType{}, nil)
 	})
 
 	AfterEach(func() {
