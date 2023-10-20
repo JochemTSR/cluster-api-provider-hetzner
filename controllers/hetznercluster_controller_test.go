@@ -106,6 +106,9 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 
 			key = client.ObjectKey{Namespace: namespace, Name: hetznerClusterName}
 
+			_, subnet, err := net.ParseCIDR(instance.Spec.HCloudNetwork.SubnetCIDRBlock)
+			Expect(err).NotTo(HaveOccurred())
+
 			hcloudClient = testEnv.HcloudClient
 
 			hcloudClient.On("ListNetworks", mock.Anything, hcloud.NetworkListOpts{
@@ -119,6 +122,7 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 					{
 						Type:        "server",
 						NetworkZone: "eu-central",
+						IPRange:     subnet,
 					},
 				},
 				Labels: map[string]string{
