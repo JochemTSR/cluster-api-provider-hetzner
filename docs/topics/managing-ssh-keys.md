@@ -1,5 +1,15 @@
 ## Managing SSH keys
 
+This section provides details about SSH keys and its importance with regards to CAPH.
+
+### What are SSH keys?
+
+
+
+### SSH keys in CAPH
+
+
+
 ### In Hetzner Cloud
 In pure HCloud clusters, without bare metal servers, there is no need for SSH keys. All keys that exist in HCloud API and are specified in ```HetznerCluster``` properties are included when provisioning machines. Therefore, they can be used to access those machines via SSH. Note that you have to upload those keys via Hetzner UI or API beforehand. 
 
