@@ -129,7 +129,7 @@ type PublicNetworkSpec struct {
 	// +optional
 	// +kubebuilder:default=true
 	EnableIPv4 bool `json:"enableIPv4"`
-	// EnableIPv6 defines whether server has IPv6 address enabled.
+	// EnableIPv6 defines whether server has IPv6 addresses enabled.
 	// +optional
 	// +kubebuilder:default=true
 	EnableIPv6 bool `json:"enableIPv6"`
@@ -142,7 +142,7 @@ type LoadBalancerSpec struct {
 	// +kubebuilder:default=true
 	Enabled bool `json:"enabled"`
 
-	// Name defines the name of the load balancer.
+	// Name defines the name of the load balancer. It can be specified in order to use an existing load balancer.
 	// +optional
 	Name *string `json:"name,omitempty"`
 
@@ -175,7 +175,7 @@ type LoadBalancerSpec struct {
 
 // LoadBalancerServiceSpec defines a Loadbalancer Target.
 type LoadBalancerServiceSpec struct {
-	// Protocol specifies the supported Loadbalancer Protocol. It could be one of the https, HTTP, or TCP.
+	// Protocol specifies the supported Loadbalancer Protocol. It could be one of the https, http, or tcp.
 	// +kubebuilder:validation:Enum=http;https;tcp
 	Protocol string `json:"protocol,omitempty"`
 
@@ -224,7 +224,7 @@ type HCloudNetworkSpec struct {
 	SubnetCIDRBlock string `json:"subnetCidrBlock,omitempty"`
 
 	// NetworkZone specifies the HCloud network zone of the private network.
-	// The zones must be in between eu-central, us-east, or us-west.
+	// The zones must be one of eu-central, us-east, or us-west. The default is eu-central.
 	// +kubebuilder:validation:Enum=eu-central;us-east;us-west
 	// +kubebuilder:default=eu-central
 	// +optional
