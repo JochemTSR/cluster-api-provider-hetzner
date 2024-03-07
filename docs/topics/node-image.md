@@ -1,5 +1,14 @@
 # Node Images
 
+
+## What are node-images?
+
+
+
+## Node-images in CAPH
+
+
+
 ## Creating a viable Node Image
 
 For using cluster-API with the bootstrap provider kubeadm, we need a server with all the necessary binaries and settings for running Kubernetes.
