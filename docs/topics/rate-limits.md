@@ -1,10 +1,8 @@
 # Rate limits
 
-
-
 ## What are rate limits?
 
-
+Rate limits are restrictions that can be set by a service provider to limit the number of requests that an user can make within a specific amount of time. They are commonly used in APIs and other services. These restrictions on limiting requests are put in place to ensure that the underlying infrastructure of a server remains intact during a surge of traffic. It also helps manage load by effective distribution of server resources while maintaining the quality of service. Rate limitings also prevents abuse of the service and ensure a fair usage. It can be applied on various granularities like per-user, per-applications, etc.
 
 ## Rate limits in CAPH
 
